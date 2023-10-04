@@ -1,6 +1,6 @@
     - name: Connecting to cluster
       shell: |
-        #        rm -rf '{{ cluster_name }}'
+        rm -rf '{{ cluster_name }}'
         echo "deleted {{ cluster_name }} file from local"
       register: "outputd"
 
