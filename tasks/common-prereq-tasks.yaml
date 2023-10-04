@@ -1,7 +1,7 @@
 ---
     - name: Cloning repo for install-config template
       ansible.builtin.git:
-        repo: https://github.com/AnuThac/Openshift-provisioning.git
+        repo: https://github.com/AnuThac/os-cluster-provisioning.git
         dest: '{{ cluster_name }}'
         version: main
 
