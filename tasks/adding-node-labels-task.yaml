@@ -1,0 +1,41 @@
+---
+    - name: Connecting to cluster
+      shell: |
+        export KUBECONFIG='{{ cluster_name }}/{{ provider }}/auth/kubeconfig'
+        oc get nodes
+      register: "kubefile"
+    - debug: var=kubefile.stdout_lines
+
+    - name: "labelling master nodes"
+      block:
+        - name: "get master nodes"
+          shell: |
+            export KUBECONFIG='{{ cluster_name }}/{{ provider }}/auth/kubeconfig'
+            oc get nodes -l node-role.kubernetes.io/control-plane -o custom-columns=NAME:.metadata.name --no-headers=true
+          register: "master_nodelist"
+
+        - name: "label master nodes"
+          shell: |
+            export KUBECONFIG='{{ cluster_name }}/{{ provider }}/auth/kubeconfig'
+            oc label node {{ item }} {{ master_tags }}
+          with_items:
+            - "{{ master_nodelist.stdout_lines }}"
+      when: lookup('vars', 'master_tags', default="") != ""
+
+    - name: "labelling worker nodes"
+      block:
+        - name: "get worker nodes"
+          shell: |
+            export KUBECONFIG='{{ cluster_name }}/{{ provider }}/auth/kubeconfig'
+            oc get nodes -l node-role.kubernetes.io/worker= -o custom-columns=NAME:.metadata.name --no-headers=true
+          register: "worker_nodelist"
+
+        - name: "label worker nodes"
+          shell: |
+            export KUBECONFIG='{{ cluster_name }}/{{ provider }}/auth/kubeconfig'
+            oc label node {{ item }} {{ worker_tags }}
+          with_items:
+            - "{{ worker_nodelist.stdout_lines }}"
+      when: lookup('vars', 'worker_tags', default="") != ""
+
+

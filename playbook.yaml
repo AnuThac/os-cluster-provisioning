@@ -1,0 +1,26 @@
+---
+  - name: "Installing OS cluster"
+    hosts: localhost
+    connection: local
+    vars_files:
+    - /home/ubuntu/del/playbook/vars 
+
+    tasks:
+      - name: Execute common tasks
+        include_tasks: tasks/common-prereq-tasks.yaml
+
+      - name: Add IAM tags for AWS
+        include_tasks: tasks/aws-prereq-tasks.yaml
+        when: provider == 'aws'
+
+      - name: Provisioning cluster
+        include_tasks: tasks/installation-task.yaml
+
+      - name: Upload Terraform and metadata files to S3
+        include_tasks: tasks/upload-to-s3-task.yaml
+
+      - name: Adding labels
+        include_tasks: tasks/adding-node-labels-task.yaml
+
+      - name: Deleting files from Ansible controller
+        include_tasks: tasks/cleanup-task.yaml

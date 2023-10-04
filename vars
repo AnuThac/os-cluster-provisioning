@@ -1,0 +1,18 @@
+provider : ''
+
+region : 'us-east-2'
+#eastus2
+
+bucket_region : 'us-east-2'
+
+base_domain : ''
+
+cluster_name : ''
+
+pull_secret :
+
+master_tags: owner=abc tenantId=13 
+
+#######For Azure
+
+rg_name : ''

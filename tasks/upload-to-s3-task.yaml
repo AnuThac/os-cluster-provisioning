@@ -1,0 +1,16 @@
+---
+    - name: Store TF and metadata files in S3 bucket for AWS and Azure cluster
+      block:
+        - name: Creating S3 bucket if not present
+          shell: |
+            aws s3api head-bucket --bucket openshift-ansible --region {{ bucket_region }} 2>/dev/null || aws s3api create-bucket --bucket openshift-ansible --region {{ bucket_region }}  --create-bucket-configuration LocationConstraint={{ bucket_region }}
+          register: "bucket"
+        - debug: var=bucket.stdout_lines
+
+        - name: Copying files to S3
+          shell: |
+            aws s3api put-object --bucket openshift-ansible --key "{{ provider }}/{{ cluster_name }}"/
+            aws s3 sync '{{ cluster_name }}/{{ provider }}/' 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}/'
+          register: "s3"
+        - debug: var=s3.stdout_lines
+

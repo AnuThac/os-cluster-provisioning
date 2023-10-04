@@ -1,0 +1,19 @@
+---
+    - name: "Adding tags to IAM users"
+      shell: |
+        pattern="{{ cluster_name }}-"
+        target_count=6
+        while [ "$(echo "$RESOURCE_IDS" | wc -w)" -lt "$target_count" ]; do
+            echo "Waiting for $target_count items..."
+            iam_users=$(aws iam list-users |grep -i UserName|sed -e 's/.*: \"//' -e 's/\",//')
+            RESOURCE_IDS=$(echo "$iam_users" | grep -E "$pattern")
+            sleep 5
+        done
+        for RESOURCE_ID in $RESOURCE_IDS
+        do
+            aws iam tag-user --user-name $RESOURCE_ID --tags Key=Type,Value=AppID
+           echo "Added tag 'Type=AppID' to resource $RESOURCE_ID"
+        done
+      async: 900
+      poll: 0
+
