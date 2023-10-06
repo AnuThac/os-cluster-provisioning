@@ -1,0 +1,55 @@
+---
+- name: "Scaling worker nodes"
+  hosts: localhost
+  connection: local
+  vars_files:
+    - /home/ubuntu/testing/scale-vars
+
+  tasks:
+    - name: "getting machinesets"
+      shell: |
+        export KUBECONFIG=/home/ubuntu/kubeconfig
+        oc get machinesets -n openshift-machine-api -o jsonpath='{range .items[*]}[{.metadata.name}]={.status.replicas}{"\t"}'
+      register: machinesets
+
+    
+    - name: "equally distributing"
+      shell: |
+        declare -A machinesets=( {{ machinesets.stdout }} )
+        max=$(echo ${machinesets[@]} | tr " " "\n" | sort -nr | head -n1)
+
+        req={{ scale_up_count }}
+
+        while [[ ${req} -gt 0 ]]; do
+          count=0
+          for machineset in ${!machinesets[@]}; do
+            if [[ (${machinesets[${machineset}]} -lt ${max}) && (${req} -ne 0) ]]; then
+              machinesets[${machineset}]=$(( ${machinesets[${machineset}]} + 1 ))
+              req=$(( ${req} - 1 ))
+            else
+              count=$(( ${count} + 1 ))
+            fi
+          done
+
+          if [[ (${count} -eq ${{ "{" }}{{ "#" }}machinesets[@]}) && (${req} -ne 0) ]]; then
+            for machineset in ${!machinesets[@]}; do
+              if [[ ${req} -ne 0 ]]; then
+                machinesets[${machineset}]=$(( ${machinesets[${machineset}]} + 1 ))
+                req=$(( ${req} - 1 ))
+              fi
+            done
+          fi
+        done
+
+        for machineset in "${!machinesets[@]}"; do
+          echo ${machineset}: ${machinesets[${machineset}]}
+        done
+      args:
+        executable: /bin/bash
+      register: updated_machinesets
+
+    - name: "scale machineset"
+      shell: |
+        export KUBECONFIG=/home/ubuntu/kubeconfig
+        oc scale --replicas={{ item.value }} machineset {{ item.key }} -n  openshift-machine-api
+      with_dict: "{{ updated_machinesets.stdout | from_yaml }}"
