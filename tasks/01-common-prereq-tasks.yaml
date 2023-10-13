@@ -1,0 +1,104 @@
+---
+- name: Cloning repo for install-config template
+  ansible.builtin.git:
+   repo: https://github.com/AnuThac/os-cluster-provisioning.git
+   dest: '{{ cluster_name }}'
+   version: main
+
+- name: Install AWS CLI on Ubuntu
+  block:
+    - name: Ensure required packages are installed
+      ansible.builtin.package:
+        name:
+          - unzip
+          - curl
+        state: present
+
+    - name: Install AWS CLI
+      ansible.builtin.command:
+        cmd: "which aws"
+        creates: /usr/local/bin/aws
+      register: aws_cli_installed
+
+    - name: Download AWS CLI
+      ansible.builtin.get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+      when: not aws_cli_installed.changed
+
+    - name: Unzip AWS CLI
+      ansible.builtin.unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+      when: not aws_cli_installed.changed
+
+    - name: Run AWS CLI installation script
+      ansible.builtin.command:
+        cmd: /tmp/aws/install --update
+      when: not aws_cli_installed.changed
+
+    - name: Clean up installation files
+      ansible.builtin.file:
+        path: "/tmp/awscliv2.zip"
+        state: absent
+      when: not aws_cli_installed.changed
+        #  when: provider == "aws"
+  become: true
+
+
+- name: Install OpenShift(oc) and kubectl CLIs
+  block:
+    - name: Download OpenShift CLIs
+      ansible.builtin.get_url:
+        url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+        dest: /tmp/openshift-client-linux.tar.gz
+      register: cli
+
+    - name: Extract OpenShift CLIs
+      ansible.builtin.unarchive:
+        src: /tmp/openshift-client-linux.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+      become: true
+
+    - name: Set permissions for OpenShift CLIs
+      ansible.builtin.file:
+        path: "/usr/local/bin/{{ item }}"
+        mode: '0777'
+      with_items:
+        - oc
+        - kubectl
+      become: true
+
+    - name: Clean up temporary files
+      ansible.builtin.file:
+        path: "/tmp/openshift-client-linux.tar.gz"
+        state: absent
+#      when: cli|success
+
+- name: Updating Install config file
+  ansible.builtin.template:
+    src: '{{ cluster_name }}/{{ provider }}/install-config.j2'
+    dest: '{{ cluster_name }}/{{ provider }}/install-config.yaml'
+
+- name: Download and Install Openshift Installer
+  block:
+    - name: Download Openshift Installer
+      ansible.builtin.get_url:
+        url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-install-linux.tar.gz
+        dest: /tmp/openshift-install-linux.tar.gz
+        #      register: installer_download
+
+    - name: Extract and Install Openshift Installer
+      ansible.builtin.unarchive:
+        src: /tmp/openshift-install-linux.tar.gz
+        dest: /usr/local/bin/
+        remote_src: yes
+        #      when: installer_download|success
+
+    - name: Clean up downloaded files
+      ansible.builtin.file:
+        path: "/tmp/openshift-install-linux.tar.gz"
+        state: absent
+          #      when: installer_download|success
+  become: true

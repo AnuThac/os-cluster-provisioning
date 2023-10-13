@@ -2,24 +2,24 @@
   hosts: localhost
   connection: local
   vars_files:
-  - /home/ubuntu/testing/tags-vars
+  - /home/ubuntu/os-cluster-provisioning/modify-tags/tags-vars
+  environment:
+    KUBECONFIG: "{{ cluster_name }}"
 
   tasks:
     - name: "copying kubeconfig file and connecting to cluster"
-      shell: |
-        aws s3 cp 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' '{{ cluster_name }}'
+      ansible.builtin.shell: |
+        aws s3 cp 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' $KUBECONFIG
 
     - name: "labelling master nodes"
       block:
         - name: "get master nodes"
-          shell: |
-            export KUBECONFIG={{ cluster_name }}
+          ansible.builtin.shell: |
             oc get nodes -l node-role.kubernetes.io/control-plane -o custom-columns=NAME:.metadata.name --no-headers=true
           register: "master_nodelist"
 
         - name: "label master nodes"
-          shell: |
-            export KUBECONFIG='{{ cluster_name }}/kubeconfig'
+          ansible.builtin.shell: |
             oc label node {{ item }} {{ master_tags }} --overwrite
           with_items:
             - "{{ master_nodelist.stdout_lines }}"
@@ -28,16 +28,18 @@
     - name: "labelling worker nodes"
       block:
         - name: "get worker nodes"
-          shell: |
-            export KUBECONFIG='{{ cluster_name }}'
+          ansible.builtin.shell: |
             oc get nodes -l node-role.kubernetes.io/worker= -o custom-columns=NAME:.metadata.name --no-headers=true
           register: "worker_nodelist"
 
         - name: "label worker nodes"
-          shell: |
-            export KUBECONFIG='{{ cluster_name }}/kubeconfig'
+          ansible.builtin.shell: |
             oc label node {{ item }} {{ worker_tags }} --overwrite
           with_items:
             - "{{ worker_nodelist.stdout_lines }}"
       when: lookup('vars', 'worker_tags', default="") != ""
 
+    - name: "remove kubeconfig from controller node"
+      ansible.builtin.file:
+        path: $KUBECONFIG
+        state: absent

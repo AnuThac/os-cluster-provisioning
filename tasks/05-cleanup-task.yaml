@@ -1,0 +1,10 @@
+- name: Connecting to cluster
+  ansible.builtin.file:
+    path: "{{ cluster_name }}"
+    state: absent
+  register: outputd
+  changed_when: outputd.changed
+
+- name: Debugging output
+  debug:
+    var: outputd

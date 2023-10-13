@@ -1,0 +1,7 @@
+    - name: "Installing Opeshift cluster"
+      ignore_errors: true
+      ansible.builtin.command: 
+        cmd: openshift-install create cluster --dir '{{ cluster_name }}/{{ provider }}'  --log-level=info
+      register: "inst"
+    - debug: var=inst
+      

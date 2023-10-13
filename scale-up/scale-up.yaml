@@ -3,18 +3,23 @@
   hosts: localhost
   connection: local
   vars_files:
-    - /home/ubuntu/testing/scale-vars
+    - /home/ubuntu/os-cluster-provisioning/scale-up/scale-vars
+  environment:
+    KUBECONFIG: "{{ cluster_name }}"
 
   tasks:
+    - name: "copying kubeconfig file and connecting to cluster"
+      ansible.builtin.shell: |
+        aws s3 cp 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' $KUBECONFIG
+
     - name: "getting machinesets"
-      shell: |
-        export KUBECONFIG=/home/ubuntu/kubeconfig
+      ansible.builtin.shell: |
         oc get machinesets -n openshift-machine-api -o jsonpath='{range .items[*]}[{.metadata.name}]={.status.replicas}{"\t"}'
       register: machinesets
 
     
     - name: "equally distributing"
-      shell: |
+      ansible.builtin.shell: |
         declare -A machinesets=( {{ machinesets.stdout }} )
         max=$(echo ${machinesets[@]} | tr " " "\n" | sort -nr | head -n1)
 
@@ -49,7 +54,11 @@
       register: updated_machinesets
 
     - name: "scale machineset"
-      shell: |
-        export KUBECONFIG=/home/ubuntu/kubeconfig
+      ansible.builtin.shell: |
         oc scale --replicas={{ item.value }} machineset {{ item.key }} -n  openshift-machine-api
       with_dict: "{{ updated_machinesets.stdout | from_yaml }}"
+
+    - name: "remove kubeconfig from controller node"
+      ansible.builtin.file:
+        path: $KUBECONFIG
+        state: absent

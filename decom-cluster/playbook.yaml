@@ -1,0 +1,27 @@
+  - name: "Destroying Openshift cluster"
+    hosts: localhost
+    connection: local
+    vars_files:
+    - /home/ubuntu/vars
+
+    tasks:
+    - name: Copying files from S3
+      ansible.builtin.shell: |
+        aws s3 cp 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}/' '{{ cluster_name }}' --recursive
+
+    - name: Deleting Opeshift cluster
+      ansible.builtin.shell: |
+        openshift-install destroy cluster --dir '{{ cluster_name }}' --log-level info
+      register: "output"
+    - debug: var=output
+
+    - name: Deleting s3 object
+      ansible.builtin.shell: |
+        aws s3 rm 's3://openshift-ansible/{{ provider }}/{{ cluster_name }}' --recursive
+      register: "dele"
+    - debug: var=dele
+
+    - name: Deleting local folder
+      ansible.builtin.file:
+        path: '{{ cluster_name }}'
+        state: absent

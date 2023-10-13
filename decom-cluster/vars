@@ -1,0 +1,2 @@
+provider : 'aws'
+cluster_name : 'testos-13th'

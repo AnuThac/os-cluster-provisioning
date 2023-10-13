@@ -1,3 +1,4 @@
 master_tags: owner=abc tenantId- decommission=true
-provider: 
-cluster_name: 
+provider: aws
+cluster_name: testos-13th
+worker_tags: decommission=true

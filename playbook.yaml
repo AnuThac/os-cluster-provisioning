@@ -3,24 +3,24 @@
     hosts: localhost
     connection: local
     vars_files:
-    - /home/ubuntu/del/playbook/vars 
+      - /home/ubuntu/vars 
 
     tasks:
       - name: Execute common tasks
-        include_tasks: tasks/common-prereq-tasks.yaml
+        include_tasks: tasks/01-common-prereq-tasks.yaml
 
       - name: Add IAM tags for AWS
-        include_tasks: tasks/aws-prereq-tasks.yaml
+        include_tasks: tasks/01.a-aws-prereq-tasks.yaml
         when: provider == 'aws'
 
       - name: Provisioning cluster
-        include_tasks: tasks/installation-task.yaml
+        include_tasks: tasks/02-installation-task.yaml
 
       - name: Upload Terraform and metadata files to S3
-        include_tasks: tasks/upload-to-s3-task.yaml
+        include_tasks: tasks/03-upload-to-s3-task.yaml
 
       - name: Adding labels
-        include_tasks: tasks/adding-node-labels-task.yaml
+        include_tasks: tasks/04-adding-node-labels-task.yaml
 
       - name: Deleting files from Ansible controller
-        include_tasks: tasks/cleanup-task.yaml
+        include_tasks: tasks/05-cleanup-task.yaml
