@@ -1,2 +1,3 @@
 provider : 'aws'
+bucket_name: ''
 cluster_name : 'testos-13th'

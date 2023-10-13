@@ -3,11 +3,6 @@
     name: "{{ bucket_name }}"
     region: "{{ bucket_region }}"
     state: present
-          #      ignore_errors: true  #continues if creation fails due to existing bucket
-
-          #   - name: Debug Bucket Creation
-          #      debug:
-          #        var: bucket
 
 - name: Copying files to S3
   community.aws.s3_sync:
