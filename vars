@@ -3,6 +3,8 @@ provider : ''
 region : 'us-east-2'
 #eastus2
 
+bucket_name: ''
+
 bucket_region : 'us-east-2'
 
 base_domain : ''
