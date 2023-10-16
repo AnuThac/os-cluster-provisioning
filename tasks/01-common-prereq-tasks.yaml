@@ -19,29 +19,30 @@
         cmd: "which aws"
         creates: /usr/local/bin/aws
       register: aws_cli_installed
+      ignore_errors: true
 
     - name: Download AWS CLI
       ansible.builtin.get_url:
         url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: /tmp/awscliv2.zip
-      when: not aws_cli_installed.changed
+          #      when: not aws_cli_installed.changed
 
     - name: Unzip AWS CLI
       ansible.builtin.unarchive:
         src: /tmp/awscliv2.zip
         dest: /tmp
-      when: not aws_cli_installed.changed
+          #      when: not aws_cli_installed.changed
 
     - name: Run AWS CLI installation script
       ansible.builtin.command:
         cmd: /tmp/aws/install --update
-      when: not aws_cli_installed.changed
+          #      when: not aws_cli_installed.changed
 
     - name: Clean up installation files
       ansible.builtin.file:
         path: "/tmp/awscliv2.zip"
         state: absent
-      when: not aws_cli_installed.changed
+          #      when: not aws_cli_installed.changed
         #  when: provider == "aws"
   become: true
 

@@ -1,0 +1,5 @@
+    - name: "remove files from controller node"
+      ansible.builtin.file:
+        path: "{{ path }}"
+        state: absent
+

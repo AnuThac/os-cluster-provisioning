@@ -1,0 +1,25 @@
+---
+  - name: "labelling nodes"
+    hosts: localhost
+    connection: local
+    vars_files:
+      - /home/ubuntu/os-cluster-provisioning/labelling/label-vars
+    environment:
+      KUBECONFIG: "{{ cluster_name }}"
+
+    tasks:
+
+    - name: "copying kubeconfig file and connecting to cluster"
+      ansible.builtin.shell: |
+        aws s3 cp 's3://ansible-openshift/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' $KUBECONFIG
+
+    - name: "labelling nodes"
+      ansible.builtin.include_tasks: ../tasks/label-nodes.yaml
+      with_items:
+        - "control-plane"
+        - "worker"
+
+    - name: "remove kubeconfig from controller node"
+      ansible.builtin.include_tasks: ../tasks/cleanup.yaml
+      vars:
+        path: $KUBECONFIG

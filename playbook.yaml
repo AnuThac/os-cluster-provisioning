@@ -7,20 +7,24 @@
 
     tasks:
       - name: Execute common tasks
-        include_tasks: tasks/01-common-prereq-tasks.yaml
+        ansible.builtin.include_tasks: tasks/01-common-prereq-tasks.yaml
 
       - name: Add IAM tags for AWS
-        include_tasks: tasks/01.a-aws-prereq-tasks.yaml
+        ansible.builtin.include_tasks: tasks/01.a-aws-prereq-tasks.yaml
         when: provider == 'aws'
 
       - name: Provisioning cluster
-        include_tasks: tasks/02-installation-task.yaml
+        ansible.builtin.include_tasks: tasks/02-installation-task.yaml
 
       - name: Upload Terraform and metadata files to S3
-        include_tasks: tasks/03-upload-to-s3-task.yaml
+        ansible.builtin.include_tasks: tasks/upload-to-s3-task.yaml
 
-      - name: Adding labels
-        include_tasks: tasks/04-adding-node-labels-task.yaml
+      - name: "labelling nodes"
+        ansible.builtin.include_tasks: tasks/label-nodes.yaml
+        with_items:
+          - "control-plane"
+          - "worker"
 
       - name: Deleting files from Ansible controller
-        include_tasks: tasks/05-cleanup-task.yaml
+        ansible.builtin.include_tasks: tasks/cleanup.yaml
+        vars: "{{ cluster_name }}"

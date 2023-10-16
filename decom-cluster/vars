@@ -1,3 +1,3 @@
-provider : 'aws'
-bucket_name: ''
-cluster_name : 'testos-13th'
+provider : 'azure'
+bucket_name: 'ansible-openshift'
+cluster_name : 'ansible-os-16thoct'

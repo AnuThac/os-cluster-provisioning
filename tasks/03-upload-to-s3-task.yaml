@@ -3,12 +3,14 @@
     name: "{{ bucket_name }}"
     region: "{{ bucket_region }}"
     state: present
+  become: true
 
 - name: Copying files to S3
   community.aws.s3_sync:
     bucket: "{{ bucket_name }}"
     file_root: "{{ cluster_name }}/{{ provider }}/"
     key_prefix: "{{ provider }}/{{ cluster_name }}/"
+  become: true
   register: s3
 
 - name: Debug S3 Sync

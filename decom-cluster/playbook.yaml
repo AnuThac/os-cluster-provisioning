@@ -21,7 +21,6 @@
       register: "dele"
     - debug: var=dele
 
-    - name: Deleting local folder
-      ansible.builtin.file:
-        path: '{{ cluster_name }}'
-        state: absent
+      #    - name: Remove artifact folder from controller node
+      #      ansible.builtin.include_tasks: ../tasks/cleanup.yaml
+      #      vars: "../{{ cluster_name }}"

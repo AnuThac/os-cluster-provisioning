@@ -1,0 +1,20 @@
+---
+    - name: "labelling nodes"
+      block:
+        - name: "get nodes"
+          shell: |
+            oc get nodes -l node-role.kubernetes.io/{{ node_type }} -o custom-columns=NAME:.metadata.name --no-headers=true
+          register: "nodelist"
+        
+        - name: "label nodes"
+          shell: |
+            oc label node {{ node_name }} {{ node_label }}  --overwrite
+          loop: "{{ nodelist.stdout_lines }}"
+          loop_control:
+            loop_var: node_name
+
+
+      when: node_label != ""
+      vars:
+        node_type: "{{ item if (item != 'worker') else 'worker=' }}"
+        node_label: "{{ lookup('vars', item, default='') }}"

@@ -59,6 +59,6 @@
       with_dict: "{{ updated_machinesets.stdout | from_yaml }}"
 
     - name: "remove kubeconfig from controller node"
-      ansible.builtin.file:
+      ansible.builtin.include_tasks: ../tasks/cleanup.yaml
+      vars:
         path: $KUBECONFIG
-        state: absent
