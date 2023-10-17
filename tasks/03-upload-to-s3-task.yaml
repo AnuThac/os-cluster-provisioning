@@ -3,7 +3,7 @@
     name: "{{ bucket_name }}"
     region: "{{ bucket_region }}"
     state: present
-  become: true
+      #  become: true
 
 - name: Copying files to S3
   community.aws.s3_sync:

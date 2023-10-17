@@ -9,17 +9,18 @@
 
     tasks:
 
-    - name: "copying kubeconfig file and connecting to cluster"
-      ansible.builtin.shell: |
-        aws s3 cp 's3://ansible-openshift/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' $KUBECONFIG
+#    - name: "copying kubeconfig file and connecting to cluster"
+#      ansible.builtin.shell: |
+#        aws s3 cp 's3://ansible-openshift/{{ provider }}/{{ cluster_name }}/auth/kubeconfig' $KUBECONFIG
+#
 
     - name: "labelling nodes"
-      ansible.builtin.include_tasks: ../tasks/label-nodes.yaml
+      ansible.builtin.include_tasks: ../tasks/label-nodes-backup.yaml
       with_items:
         - "control-plane"
         - "worker"
 
-    - name: "remove kubeconfig from controller node"
-      ansible.builtin.include_tasks: ../tasks/cleanup.yaml
-      vars:
-        path: $KUBECONFIG
+#    - name: "remove kubeconfig from controller node"
+#      ansible.builtin.include_tasks: ../tasks/cleanup.yaml
+#      vars:
+#        path: $KUBECONFIG

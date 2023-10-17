@@ -1,4 +1,4 @@
-- name: Connecting to cluster
+- name: Remove folder form controller machine
   ansible.builtin.file:
     path: "{{ cluster_name }}"
     state: absent

@@ -1,4 +1,4 @@
 control_plane: owner=abc tenantId- decommission=true
 provider: azure
 cluster_name: ansible-os-16thoct
-worker: decommission=true
+worker: ""

@@ -1,0 +1,15 @@
+- name: Delete artifacts
+  block:
+    - name: Deleting s3 object
+      ansible.builtin.shell: |
+        aws s3 rm 's3://{{ bucket_name }}/{{ provider }}/{{ cluster_name }}' --recursive
+      register: "dele"
+    - debug: var=dele
+
+    - name: Check if S3 bucket is empty
+      shell: "aws s3 ls s3://{{ bucket_name }}/"
+      register: "s3_ls_output"
+
+    - name: Delete S3 bucket if empty
+      ansible.builtin.command: "aws s3 rb s3://{{ bucket_name }}/"
+      when: s3_ls_output.rc == 0 # exit code 0- bucket is empty
