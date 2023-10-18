@@ -19,12 +19,13 @@
        
         - name: "label nodes"
           shell: |
-            oc label node {{ node_name }} {{ node_label }}  --overwrite
+            oc label node {{ node_name }} {{ node_label }}
           loop: "{{ nodelist.stdout_lines }}"
           loop_control:
             loop_var: node_name
 
 
-      when: vars[node_label] is defined and vars[node_label] is truthy
+      when: vars[node_type] is defined and vars[node_type] is truthy
       vars:
-        node_label: "{{ item | replace('-', '_') }}"
+        node_label: "{{ lookup('vars', item | replace('-', '_')) }}"
+        node_type: "{{ item | replace('-', '_') }}"

@@ -4,6 +4,9 @@
     connection: local
     vars_files:
       - /home/ubuntu/vars.json
+    environment:
+      KUBECONFIG: "{{ cluster_name }}/{{ provider }}/auth/kubeconfig"
+
     tasks:
       - name: Execute common tasks
         ansible.builtin.include_tasks: tasks/01-common-prereq-tasks.yaml
@@ -18,7 +21,7 @@
       - name: Upload Terraform and metadata files to S3
         ansible.builtin.include_tasks: tasks/upload-to-s3-task.yaml
 
-      - name: "labelling nodes"
+      - name: labelling nodes
         ansible.builtin.include_tasks: tasks/label-nodes.yaml
         with_items:
           - "control-plane"
@@ -26,4 +29,5 @@
 
       - name: "Deleting files from Ansible controller"
         ansible.builtin.include_tasks: tasks/cleanup.yaml
-          # vars.json: "{{ cluster_name }}"
+        vars:
+          path: "{{ cluster_name }}"

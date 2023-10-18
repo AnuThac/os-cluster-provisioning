@@ -1,0 +1,12 @@
+{
+  "provider": "azure",
+  "region": "eastus2/us-east-2",
+  "base_domain": "a.net",
+  "rg_name": "ag",
+  "bucket_name": "an-ift",
+  "bucket_region": "us-east-2",
+  "cluster_name": "act",
+  "pull_secret": {"auths": .....com"},
+  "ssh_key": "ssh-ed25519 AAAWDd root@ip-10-0-77-158",
+  "control_plane": "owner=acp tenantId=15"
+}
